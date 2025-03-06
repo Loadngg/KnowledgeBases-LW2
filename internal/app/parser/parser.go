@@ -46,27 +46,38 @@ func New(r *repository.Repository, d *data.Data) *Parser {
 }
 
 func (p *Parser) Parse(g float64, t float64) (*string, error) {
+	var output strings.Builder
+
 	muValues, err := p.generateData(g, t)
 	if err != nil {
 		return nil, err
 	}
 
 	muParsableValues := &MuParsableValues{
-		GSlightlySmall: math.Sqrt(muValues.G[0]),
-		GSmall:         muValues.G[0],
-		GMedium:        muValues.G[1],
-		GBig:           muValues.G[2],
+		GSlightlySmall: muValues.G[0],
+		GSmall:         muValues.G[1],
+		GMedium:        muValues.G[2],
+		GBig:           muValues.G[3],
 		TSmall:         muValues.T[0],
 		TMedium:        muValues.T[1],
 		TBig:           muValues.T[2],
 	}
+
+	output.WriteString(constants.VarsData.String())
+	output.WriteString(fmt.Sprintf("G Слегка малый: %.2f\n", muParsableValues.GSlightlySmall))
+	output.WriteString(fmt.Sprintf("G Малый: %.2f\n", muParsableValues.GSmall))
+	output.WriteString(fmt.Sprintf("G Средний: %.2f\n", muParsableValues.GMedium))
+	output.WriteString(fmt.Sprintf("G Большой: %.2f\n", muParsableValues.GBig))
+	output.WriteString(fmt.Sprintf("T Малый: %.2f\n", muParsableValues.TSmall))
+	output.WriteString(fmt.Sprintf("T Средний: %.2f\n", muParsableValues.TMedium))
+	output.WriteString(fmt.Sprintf("T Большой: %.2f\n", muParsableValues.TBig))
 
 	rules, err := p.Repository.GetRules()
 	if err != nil {
 		return nil, err
 	}
 
-	var output strings.Builder
+	output.WriteString(constants.RulesValues.String())
 	ruleWeights := make([]float64, len(rules))
 	for i, rule := range rules {
 		weight := p.calculateRuleWeight(rule, *muParsableValues)
@@ -75,6 +86,12 @@ func (p *Parser) Parse(g float64, t float64) (*string, error) {
 	}
 
 	apparatusWeights := p.calculateApparatusWeights(ruleWeights, muValues.RulesMuMatrix)
+
+	output.WriteString(constants.ApparatusValues.String())
+	for _, aw := range apparatusWeights {
+		output.WriteString(fmt.Sprintf("Аппарат %s: вес %.2f\n", aw.Name, aw.Weight))
+	}
+
 	sort.Slice(apparatusWeights, func(i, j int) bool {
 		return apparatusWeights[i].Weight > apparatusWeights[j].Weight
 	})
@@ -106,8 +123,10 @@ func (p *Parser) generateData(g float64, t float64) (*MuValues, error) {
 		return nil, fmt.Errorf(constants.ValueNotInScope.String(), "T", p.Data.T.GetScope().Start, p.Data.T.GetScope().End)
 	}
 
+	gSmall := p.Data.G.Small(g)
 	gMuValues := []float64{
-		utils.RoundValue(p.Data.G.Small(g)),
+		utils.RoundValue(math.Sqrt(gSmall)),
+		utils.RoundValue(gSmall),
 		utils.RoundValue(p.Data.G.Medium(g)),
 		utils.RoundValue(p.Data.G.Big(g)),
 	}

@@ -21,6 +21,9 @@ const (
 	InvalidConditionError
 	UnknownVariableError
 	UnknownValueError
+	VarsData
+	RulesValues
+	ApparatusValues
 )
 
 var textLabels = map[TextEnum]string{
@@ -42,6 +45,9 @@ var textLabels = map[TextEnum]string{
 	InvalidConditionError:  "Неверное условие: %s",
 	UnknownVariableError:   "Неизвестная переменная: %s",
 	UnknownValueError:      "Неизвестное значение: %s",
+	VarsData:               "Параметры нечетких множеств:\n",
+	RulesValues:            "\nЗначения правил:\n",
+	ApparatusValues:        "\nЗначения аппаратов:\n",
 }
 
 func (e TextEnum) String() string {
