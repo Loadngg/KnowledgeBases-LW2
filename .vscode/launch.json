@@ -8,8 +8,7 @@
 			"mode": "auto",
 			"program": "${cwd}/cmd/app/main.go",
 			"cwd": "${workspaceFolder}",
-			"console": "integratedTerminal",
-			"envFile": "${cwd}/.env"
+			"console": "integratedTerminal"
 		}
 	]
 }
